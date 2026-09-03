@@ -47,13 +47,89 @@ struct HydrationCard: View {
     }
 }
 
-struct QuickAddButton: View { let amount: Int; @ObservedObject var model: WaterViewModel; var body: some View { Button { model.add(amount) } label: { VStack(spacing: 7) { Image(systemName: "plus").font(.caption.bold()); Text("\(amount) ml").font(.caption.bold()) }.frame(maxWidth: .infinity).padding(.vertical, 13).background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 15)) } }
+struct QuickAddButton: View {
+    let amount: Int
+    @ObservedObject var model: WaterViewModel
 
-struct StreakCard: View { @ObservedObject var model: WaterViewModel; var body: some View { HStack(spacing: 15) { Image(systemName: model.isFrozen ? "cloud.fill" : "cloud.sun.fill").font(.system(size: 35)).foregroundStyle(model.isFrozen ? .gray : .cyan).symbolEffect(.pulse, value: model.streak); VStack(alignment: .leading, spacing: 4) { Text("\(model.streak) day Cloud Streak").font(.headline); Text(model.isFrozen ? "Frozen cloud · Joker available" : "Your consistency is building momentum").font(.caption).foregroundStyle(.secondary) }; Spacer(); if model.isFrozen { Button("Use Joker") { model.useJoker() }.font(.caption.bold()).buttonStyle(.borderedProminent) } else { Text("☁️").font(.title2) } }.padding(17).background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 20)) }
+    var body: some View {
+        Button { model.add(amount) } label: {
+            VStack(spacing: 7) {
+                Image(systemName: "plus").font(.caption.bold())
+                Text("\(amount) ml").font(.caption.bold())
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 13)
+            .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 15))
+        }
+    }
+}
 
-struct TimelineView: View { @ObservedObject var model: WaterViewModel; var body: some View { HStack(spacing: 0) { ForEach(0..<6, id: \.self) { index in VStack(spacing: 8) { Circle().fill(index < model.glassesToday ? .cyan : .white.opacity(0.12)).frame(width: 14, height: 14); Text("\(index + 1)").font(.caption2).foregroundStyle(.secondary) }; if index < 5 { Rectangle().fill(index < model.glassesToday - 1 ? .cyan.opacity(0.65) : .white.opacity(0.1)).frame(height: 2).frame(maxWidth: .infinity) } } }.padding(18).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 18)) } }
+struct StreakCard: View {
+    @ObservedObject var model: WaterViewModel
 
-struct SettingsView: View { @ObservedObject var model: WaterViewModel; @Environment(\.dismiss) private var dismiss; var body: some View { NavigationStack { Form { Section("Daily goal") { Stepper("\(model.target / 1000, specifier: "%.1f") liters", value: $model.target, in: 1500...6000, step: 250) }; Section { Text("Your hydration data stays on this device. It can be synced later when a connected Apple Watch or internet connection is available.").font(.footnote).foregroundStyle(.secondary) } }.navigationTitle("Nexus Water").toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } } } }
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: model.isFrozen ? "cloud.fill" : "cloud.sun.fill")
+                .font(.system(size: 35))
+                .foregroundStyle(model.isFrozen ? .gray : .cyan)
+                .symbolEffect(.pulse, value: model.streak)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(model.streak) day Cloud Streak").font(.headline)
+                Text(model.isFrozen ? "Frozen cloud · Joker available" : "Your consistency is building momentum")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if model.isFrozen {
+                Button("Use Joker") { model.useJoker() }.font(.caption.bold()).buttonStyle(.borderedProminent)
+            } else {
+                Text("☁️").font(.title2)
+            }
+        }
+        .padding(17)
+        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+struct TimelineView: View {
+    @ObservedObject var model: WaterViewModel
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<6, id: \.self) { index in
+                VStack(spacing: 8) {
+                    Circle().fill(index < model.glassesToday ? .cyan : .white.opacity(0.12)).frame(width: 14, height: 14)
+                    Text("\(index + 1)").font(.caption2).foregroundStyle(.secondary)
+                }
+                if index < 5 {
+                    Rectangle().fill(index < model.glassesToday - 1 ? .cyan.opacity(0.65) : .white.opacity(0.1)).frame(height: 2).frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .padding(18)
+        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+struct SettingsView: View {
+    @ObservedObject var model: WaterViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Daily goal") {
+                    Stepper("\(model.target / 1000, specifier: "%.1f") liters", value: $model.target, in: 1500...6000, step: 250)
+                }
+                Section {
+                    Text("Your hydration data stays on this device. It can be synced later when a connected Apple Watch or internet connection is available.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Nexus Water")
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+    }
+}
 
 final class WaterViewModel: ObservableObject {
     @Published var consumed: Int { didSet { save() } }; @Published var target: Int { didSet { save() } }; @Published var streak: Int { didSet { save() } }; @Published var isFrozen = false; @Published var glassesToday = 0; @Published var showCelebration = false
