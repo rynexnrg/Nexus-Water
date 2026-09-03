@@ -15,10 +15,8 @@ jobs:
         run: xcodegen generate
       - name: Build for simulator
         run: xcodebuild -project NexusWater.xcodeproj -scheme NexusWater -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO ASSETCATALOG_COMPILER_APPICON_NAME= build
-      - name: Package simulator app
-        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Debug-iphonesimulator/NexusWater.app NexusWater-Simulator.app.zip
       - name: Upload simulator app
         uses: actions/upload-artifact@v4
         with:
           name: NexusWater-Simulator-app
-          path: NexusWater-Simulator.app.zip
+          path: build/Build/Products/Debug-iphonesimulator/NexusWater.app
