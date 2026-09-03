@@ -1,0 +1,24 @@
+name: iOS Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Build for simulator
+        run: xcodebuild -project NexusWater.xcodeproj -scheme NexusWater -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Package simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Debug-iphonesimulator/NexusWater.app NexusWater-Simulator.app.zip
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusWater-Simulator-app
+          path: NexusWater-Simulator.app.zip
