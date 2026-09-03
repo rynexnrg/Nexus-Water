@@ -82,7 +82,7 @@ struct StreakCard: View {
             if model.isFrozen {
                 Button("Use Joker") { model.useJoker() }.font(.caption.bold()).buttonStyle(.borderedProminent)
             } else {
-                Text("☁️").font(.title2)
+                Image(systemName: "cloud.fill").font(.title2).foregroundStyle(.cyan)
             }
         }
         .padding(17)
@@ -143,7 +143,7 @@ final class WaterViewModel: ObservableObject {
     private func completeToday() { let stamp = Calendar.current.dateStamp; guard defaults.string(forKey: "nexus.water.completedDate") != stamp else { return }; streak = max(streak + 1, 1); isFrozen = false; defaults.set(stamp, forKey: "nexus.water.completedDate"); showCelebration = true; UIImpactFeedbackGenerator(style: .medium).impactOccurred(); DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) { self.showCelebration = false } }
 }
 
-extension Calendar { var dateStamp: String { formatted(Date(), date: .numeric, time: .omitted) } }
-extension Calendar { var previousDateStamp: String { formatted(date(byAdding: .day, value: -1, to: Date()) ?? Date(), date: .numeric, time: .omitted) }; var monthStamp: String { formatted(Date(), date: .numeric, time: .omitted).prefix(7).description } }
+private let nexusDateFormatter: DateFormatter = { let formatter = DateFormatter(); formatter.calendar = Calendar.current; formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"; return formatter }()
+extension Calendar { var dateStamp: String { nexusDateFormatter.string(from: Date()) }; var previousDateStamp: String { nexusDateFormatter.string(from: date(byAdding: .day, value: -1, to: Date()) ?? Date()) }; var monthStamp: String { String(dateStamp.prefix(7)) } }
 struct WaterBackground: View { var body: some View { LinearGradient(colors: [Color(red: 0.02, green: 0.10, blue: 0.18), Color(red: 0.01, green: 0.03, blue: 0.08)], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea() } }
-struct CelebrationOverlay: View { var body: some View { VStack(spacing: 10) { Image(systemName: "cloud.sun.fill").font(.system(size: 52)).foregroundStyle(.cyan).symbolEffect(.bounce); Text("Cloud Streak extended").font(.headline); Text("100% hydrated today").font(.caption).foregroundStyle(.secondary) }.padding(25).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24)).overlay(RoundedRectangle(cornerRadius: 24).stroke(.cyan.opacity(0.35))).transition(.scale.combined(with: .opacity)) } }
+struct CelebrationOverlay: View { var body: some View { VStack(spacing: 10) { Image(systemName: "cloud.sun.fill").font(.system(size: 52)).foregroundStyle(.cyan); Text("Cloud Streak extended").font(.headline); Text("100% hydrated today").font(.caption).foregroundStyle(.secondary) }.padding(25).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24)).overlay(RoundedRectangle(cornerRadius: 24).stroke(.cyan.opacity(0.35))).transition(.scale.combined(with: .opacity)) } }

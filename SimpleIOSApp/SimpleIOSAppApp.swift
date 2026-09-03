@@ -23,7 +23,7 @@ struct WaterSplashView: View {
 
     var body: some View {
         ZStack {
-            NexusBackground()
+            WaterBackground()
             VStack(spacing: 18) {
                 ZStack {
                     Circle().stroke(.cyan.opacity(0.25), lineWidth: 1).frame(width: 118, height: 118).scaleEffect(pulse ? 1.18 : 0.9).opacity(pulse ? 0 : 1)
