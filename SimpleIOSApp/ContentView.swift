@@ -15,6 +15,7 @@ struct ContentView: View {
                 SettingsView(model: model).tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
             }
             .tint(.cyan)
+            .background(WaterBackground())
             if model.showCelebration { CelebrationOverlay() }
         }
         .preferredColorScheme(.dark)
@@ -25,7 +26,7 @@ struct TodayView: View {
     @ObservedObject var model: WaterViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
             VStack(alignment: .leading, spacing: 3) { Text("NEXUS WATER").font(.caption.bold()).tracking(2).foregroundStyle(.cyan); Text("Good morning").font(.title.bold()) }
                 Spacer()
@@ -37,7 +38,8 @@ struct TodayView: View {
             StreakCard(model: model)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 4)
+        .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 2)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -46,15 +48,15 @@ struct MotivationCard: View { let message: String; var body: some View { HStack(
 struct HydrationCard: View {
     @ObservedObject var model: WaterViewModel
     var body: some View {
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
             HStack { Text("DAILY HYDRATION").font(.caption.bold()).tracking(1.5).foregroundStyle(.secondary); Spacer(); Text("\(model.target / 1000, specifier: "%.1f") L goal").font(.caption).foregroundStyle(.secondary) }
             ZStack {
                 Circle().stroke(.white.opacity(0.08), lineWidth: 18)
                 Circle().trim(from: 0, to: model.progress).stroke(LinearGradient(colors: [.cyan, .blue], startPoint: .topLeading, endPoint: .bottomTrailing), style: StrokeStyle(lineWidth: 18, lineCap: .round)).rotationEffect(.degrees(-90)).animation(.easeOut, value: model.progress)
                 VStack(spacing: 3) { Image(systemName: "drop.fill").foregroundStyle(.cyan); Text("\(model.consumed / 1000, specifier: "%.1f") L").font(.system(size: 38, weight: .bold, design: .rounded)); Text("\(Int(model.progress * 100))% complete").font(.caption).foregroundStyle(.secondary) }
-            }.frame(height: 170)
+            }.frame(height: 145)
             Text(model.progress >= 1 ? "Goal reached. Your cloud is glowing." : "A few calm sips can change your whole afternoon.").font(.subheadline).foregroundStyle(.secondary)
-        }.padding(14).glassPanel(cornerRadius: 24, accent: .cyan)
+        }.padding(12).glassPanel(cornerRadius: 22, accent: .cyan)
     }
 }
 
@@ -79,9 +81,9 @@ struct StreakCard: View {
     @ObservedObject var model: WaterViewModel
 
     var body: some View {
-        HStack(spacing: 15) {
+        HStack(spacing: 10) {
             Image(systemName: model.isFrozen ? "cloud.fill" : "cloud.sun.fill")
-                .font(.system(size: 35))
+                .font(.system(size: 26))
                 .foregroundStyle(model.isFrozen ? .gray : .cyan)
                 .symbolEffect(.pulse, value: model.streak)
             VStack(alignment: .leading, spacing: 4) {
@@ -96,7 +98,7 @@ struct StreakCard: View {
                 Image(systemName: "cloud.fill").font(.title2).foregroundStyle(.cyan)
             }
         }
-        .padding(17)
+        .padding(12)
         .glassPanel(cornerRadius: 18)
     }
 }

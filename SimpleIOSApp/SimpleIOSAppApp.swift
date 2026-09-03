@@ -7,9 +7,11 @@ struct NexusWaterApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
+                WaterBackground()
                 ContentView()
                 if showSplash { WaterSplashView().transition(.opacity) }
             }
+            .ignoresSafeArea()
             .task {
                 try? await Task.sleep(for: .seconds(1.8))
                 withAnimation(.easeOut(duration: 0.45)) { showSplash = false }
