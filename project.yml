@@ -11,4 +11,3 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.example.NexusWater
       GENERATE_INFOPLIST_FILE: YES
-      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
