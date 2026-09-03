@@ -8,29 +8,40 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             WaterBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 5) { Text("NEXUS WATER").font(.caption.bold()).tracking(2).foregroundStyle(.cyan); Text("Good morning").font(.largeTitle.bold()) }
-                        Spacer()
-                        Button { showingSettings = true } label: { Image(systemName: "slider.horizontal.3").font(.title3).padding(12).background(.white.opacity(0.09), in: Circle()) }
-                    }
-                    MotivationCard(message: model.motivation)
-                    HydrationCard(model: model)
-                    HStack(spacing: 12) { QuickAddButton(amount: 250, model: model); QuickAddButton(amount: 350, model: model); QuickAddButton(amount: 500, model: model) }
-                    StreakCard(model: model)
-                    Text("Today’s rhythm").font(.title3.bold())
-                    TimelineView(model: model)
-                }.padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 30)
-            }.scrollIndicators(.hidden)
+            TabView {
+                TodayView(model: model).tabItem { Label("Today", systemImage: "drop.fill") }
+                HistoryView(model: model).tabItem { Label("History", systemImage: "calendar") }
+                InsightsView(model: model).tabItem { Label("Insights", systemImage: "chart.bar.xaxis") }
+                SettingsView(model: model).tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
+            }
+            .tint(.cyan)
             if model.showCelebration { CelebrationOverlay() }
         }
-        .sheet(isPresented: $showingSettings) { SettingsView(model: model) }
         .preferredColorScheme(.dark)
     }
 }
 
-struct MotivationCard: View { let message: String; var body: some View { HStack(spacing: 14) { Image(systemName: "sparkles").font(.title2).foregroundStyle(.cyan); Text(message).font(.headline).fixedSize(horizontal: false, vertical: true); Spacer() }.padding(18).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 22)).overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(0.12))) } }
+struct TodayView: View {
+    @ObservedObject var model: WaterViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) { Text("NEXUS WATER").font(.caption.bold()).tracking(2).foregroundStyle(.cyan); Text("Good morning").font(.largeTitle.bold()) }
+                Spacer()
+                Image(systemName: "drop.circle.fill").font(.title).foregroundStyle(.cyan)
+            }
+            MotivationCard(message: model.motivation)
+            HydrationCard(model: model)
+            HStack(spacing: 10) { QuickAddButton(amount: 250, model: model); QuickAddButton(amount: 350, model: model); QuickAddButton(amount: 500, model: model) }
+            StreakCard(model: model)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 18).padding(.top, 12).padding(.bottom, 8)
+    }
+}
+
+struct MotivationCard: View { let message: String; var body: some View { HStack(spacing: 14) { Image(systemName: "sparkles").font(.title2).foregroundStyle(.cyan); Text(message).font(.headline).fixedSize(horizontal: false, vertical: true); Spacer() }.padding(16).glassPanel(cornerRadius: 20) } }
 
 struct HydrationCard: View {
     @ObservedObject var model: WaterViewModel
@@ -43,7 +54,7 @@ struct HydrationCard: View {
                 VStack(spacing: 3) { Image(systemName: "drop.fill").foregroundStyle(.cyan); Text("\(model.consumed / 1000, specifier: "%.1f") L").font(.system(size: 38, weight: .bold, design: .rounded)); Text("\(Int(model.progress * 100))% complete").font(.caption).foregroundStyle(.secondary) }
             }.frame(height: 220)
             Text(model.progress >= 1 ? "Goal reached. Your cloud is glowing." : "A few calm sips can change your whole afternoon.").font(.subheadline).foregroundStyle(.secondary)
-        }.padding(20).background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 26)).overlay(RoundedRectangle(cornerRadius: 26).stroke(.cyan.opacity(0.18)))
+        }.padding(18).glassPanel(cornerRadius: 24, accent: .cyan)
     }
 }
 
@@ -86,7 +97,7 @@ struct StreakCard: View {
             }
         }
         .padding(17)
-        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+        .glassPanel(cornerRadius: 18)
     }
 }
 
@@ -131,6 +142,40 @@ struct SettingsView: View {
     }
 }
 
+struct HistoryView: View {
+    @ObservedObject var model: WaterViewModel
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("Your rhythm").font(.largeTitle.bold())
+                Text("A calm overview of your hydration habit.").foregroundStyle(.secondary)
+                TimelineView(model: model)
+                HStack(spacing: 12) { StatTile(title: "Today", value: "\(Int(model.progress * 100))%", icon: "drop.fill"); StatTile(title: "Streak", value: "\(model.streak)d", icon: "cloud.fill") }
+                Spacer()
+            }.padding(18).navigationTitle("History").navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+struct InsightsView: View {
+    @ObservedObject var model: WaterViewModel
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("Small data, clear progress").font(.title.bold())
+                Text("Your daily goal is \(model.target / 1000, specifier: "%.1f") liters.").foregroundStyle(.secondary)
+                StatTile(title: "Current progress", value: "\(Int(model.progress * 100))%", icon: "chart.line.uptrend.xyaxis")
+                StatTile(title: "Cloud Streak", value: "\(model.streak) days", icon: "cloud.sun.fill")
+                Spacer()
+            }.padding(18).navigationTitle("Insights").navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+struct StatTile: View { let title: String; let value: String; let icon: String; var body: some View { HStack(spacing: 14) { Image(systemName: icon).font(.title2).foregroundStyle(.cyan); VStack(alignment: .leading, spacing: 3) { Text(title).font(.caption).foregroundStyle(.secondary); Text(value).font(.title3.bold()) }; Spacer() }.padding(16).glassPanel(cornerRadius: 18) } }
+
 final class WaterViewModel: ObservableObject {
     @Published var consumed: Int { didSet { save() } }; @Published var target: Int { didSet { save() } }; @Published var streak: Int { didSet { save() } }; @Published var isFrozen = false; @Published var glassesToday = 0; @Published var showCelebration = false
     private let defaults = UserDefaults.standard; private let dateKey = "nexus.water.date"
@@ -145,5 +190,6 @@ final class WaterViewModel: ObservableObject {
 
 private let nexusDateFormatter: DateFormatter = { let formatter = DateFormatter(); formatter.calendar = Calendar.current; formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"; return formatter }()
 extension Calendar { var dateStamp: String { nexusDateFormatter.string(from: Date()) }; var previousDateStamp: String { nexusDateFormatter.string(from: date(byAdding: .day, value: -1, to: Date()) ?? Date()) }; var monthStamp: String { String(dateStamp.prefix(7)) } }
+extension View { func glassPanel(cornerRadius: CGFloat, accent: Color = .white) -> some View { background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius)).overlay(RoundedRectangle(cornerRadius: cornerRadius).stroke(accent.opacity(0.16), lineWidth: 1)) } }
 struct WaterBackground: View { var body: some View { LinearGradient(colors: [Color(red: 0.02, green: 0.10, blue: 0.18), Color(red: 0.01, green: 0.03, blue: 0.08)], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea() } }
 struct CelebrationOverlay: View { var body: some View { VStack(spacing: 10) { Image(systemName: "cloud.sun.fill").font(.system(size: 52)).foregroundStyle(.cyan); Text("Cloud Streak extended").font(.headline); Text("100% hydrated today").font(.caption).foregroundStyle(.secondary) }.padding(25).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24)).overlay(RoundedRectangle(cornerRadius: 24).stroke(.cyan.opacity(0.35))).transition(.scale.combined(with: .opacity)) } }
